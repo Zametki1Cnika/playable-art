@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+walk_out/
+demo_out/
+demo_leg.png
