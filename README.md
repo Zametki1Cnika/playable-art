@@ -1,9 +1,11 @@
-# rig-walk
+# playable-art
 
-[![gait checks](https://github.com/Zametki1Cnika/rig-walk/actions/workflows/tests.yml/badge.svg)](https://github.com/Zametki1Cnika/rig-walk/actions/workflows/tests.yml)
+[![gait checks](https://github.com/Zametki1Cnika/playable-art/actions/workflows/tests.yml/badge.svg)](https://github.com/Zametki1Cnika/playable-art/actions/workflows/tests.yml)
 
-A procedural side-view walk cycle for 2D games from **one painted leg**, and a small generation station that paints
-the parts with an image model one at a time, in one style.
+Turn AI-painted pictures into **playable 2D game art**: paint a part once, let code animate it.
+
+Two tools so far: **rigwalk** — a procedural side-view walk cycle from one painted leg — and **station** — a small
+generation station that paints the parts with an image model one at a time, in one style.
 
 Paint (or generate) a single leg once — pelvis, trouser leg, boot — and get a full walk cycle where the
 cloth, folds and shading never flicker between frames, because the painting itself never changes:
