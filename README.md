@@ -2,7 +2,8 @@
 
 [![gait checks](https://github.com/Zametki1Cnika/rig-walk/actions/workflows/tests.yml/badge.svg)](https://github.com/Zametki1Cnika/rig-walk/actions/workflows/tests.yml)
 
-A procedural side-view walk cycle for 2D games from **one painted leg**.
+A procedural side-view walk cycle for 2D games from **one painted leg**, and a small generation station that paints
+the parts with an image model one at a time, in one style.
 
 Paint (or generate) a single leg once — pelvis, trouser leg, boot — and get a full walk cycle where the
 cloth, folds and shading never flicker between frames, because the painting itself never changes:
@@ -71,6 +72,42 @@ Tune the gait from the command line (shares of the leg length and degrees):
 
 To keep feet from sliding in a game, play the cycle at the speed it was made for: one cycle covers
 `stride / stance` pixels of ground.
+
+## Generation station
+
+`station/` is the production line that feeds the rig: it asks an image model for **one small thing at a time**,
+always with references and one shared style, then checks what comes back. It runs on the
+[Codex CLI](https://github.com/openai/codex) and its built-in image generation, so a ChatGPT subscription is enough
+(no API key).
+
+- **Task folders**: `prompt.txt`, attached `reference*.png`, results in `result/<task>_vN.png`.
+- **Chains**: `needs.txt` makes a task wait until another one is accepted (`ACCEPTED.txt`) and attaches its picture:
+  etalon -> parts -> frames.
+- **One style for everything**: the `## Prompt block` of `STYLE.md` is put in front of every prompt.
+- **Pool**: several Codex workers in parallel, `PRIORITY.txt` first; a worker that hits the usage limit rests
+  until the time Codex names, a broken worker is benched without losing the task.
+- **Automatic checks**: size, flat key background, nothing cut at the edges, not empty.
+
+```bash
+python -m station queue examples/tasks          # what is ready to run
+python -m station one examples/tasks/001_glowing_mushrooms --root examples/tasks
+python -m station run examples/tasks -n 2 --wait
+```
+
+![station example](docs/station_example.png)
+
+*One run of the example task above: the gills are painted flat in one exact colour, so a glow mask can be cut by colour
+and the engine adds the light.*
+
+## Roadmap
+
+- [ ] arms and a held weapon on the same rig (aim, recoil, reload)
+- [ ] run, idle and turn cycles; transitions between them
+- [ ] quadrupeds and many-legged creatures (gaits from foot paths)
+- [ ] round-cap-free knee: a second painted leg for deep bends
+- [ ] Godot import of the baked sheets with joint data (lights, weapons, effects attached per frame)
+- [ ] glow masks and halos from flat emissive colours (`*_glow.png`) as part of the station
+- [ ] a review panel for the station (accept / rework / priority in the browser)
 
 ## Credits
 
