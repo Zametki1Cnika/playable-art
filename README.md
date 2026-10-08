@@ -1,5 +1,7 @@
 # rig-walk
 
+[![gait checks](https://github.com/Zametki1Cnika/rig-walk/actions/workflows/tests.yml/badge.svg)](https://github.com/Zametki1Cnika/rig-walk/actions/workflows/tests.yml)
+
 A procedural side-view walk cycle for 2D games from **one painted leg**.
 
 Paint (or generate) a single leg once — pelvis, trouser leg, boot — and get a full walk cycle where the
@@ -25,10 +27,21 @@ only its parts move.
    - the near and the far leg are the same painting, half a cycle apart; the far one is darkened and drawn behind;
    - gaps inside the silhouette are filled from neighbouring pixels, one dark outline goes around it.
 
+## Measured, not eyeballed
+
+`rigwalk.qa.check()` measures every cycle and `pytest` runs it on each push:
+
+- feet never go below the floor (the whole boot, not just the toe point);
+- a planted foot does not skate (its slide is a straight line in time);
+- knees bend only forward and not past 75°;
+- thigh and shin keep their painted length (the pelvis drops when a straight leg could not reach the heel);
+- the pelvis bobs, and both steps dip equally (no limp).
+
 ## Use
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt pytest
+pytest -q                                     # gait checks
 python make_demo_leg.py demo_leg.png          # or use your own leg picture
 python -m rigwalk demo_leg.png -o walk_out
 ```

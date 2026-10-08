@@ -125,6 +125,8 @@ def split_parts(mask, j, knee_blend=1.4):
                (np.hypot(xx - j[lower][0], yy - j[lower][1]) < cap(j[lower]))
         if name == "foot":  # no boot shaft in the foot part, or a high boot "breaks" at the ankle
             near &= yy > j["ankle"][1] - 4
+        if name == "shin":  # no sole in the shin part, or the sole swings below the floor with the shin
+            near &= yy < j["ankle"][1] + 4
         sel = (owner == k) | near
         m = np.zeros(mask.shape, bool)
         m[yy[sel], xx[sel]] = True

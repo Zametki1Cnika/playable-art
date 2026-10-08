@@ -113,10 +113,19 @@ class LegWalker:
         if low > self.floor:  # toe or heel below the floor: lift the foot
             ankle = (ankle[0], ankle[1] - (low - self.floor))
             knee = ik(hip, ankle, self.l1, self.l2)
+        # the painted sole may reach lower than the toe/heel points: measure the placed foot itself
+        for _ in range(3):   # the whole boot (foot + shaft) must stay above the floor
+            foot = rig.place(self.img, P["foot"], j0["ankle"], j0["toe"], ankle, (ankle[0] + tv[0], ankle[1] + tv[1]), self.size)
+            shin = rig.place(self.img, P["shin_full"], j0["knee"], j0["ankle"], knee, ankle, self.size)
+            rows = np.where(((foot[..., 3] > 0) | (shin[..., 3] > 0)).any(axis=1))[0]
+            excess = (rows.max() - self.floor) if rows.size else 0
+            if excess <= 0.5:
+                break
+            ankle = (ankle[0], ankle[1] - excess)
+            knee = ik(hip, ankle, self.l1, self.l2)
         j = {"hip": hip, "knee": knee, "ankle": ankle, "toe": (ankle[0] + tv[0], ankle[1] + tv[1])}
         out = np.zeros((self.size[1], self.size[0], 4), np.uint8)
-        for name, a, b in (("foot", "ankle", "toe"), ("shin_full", "knee", "ankle")):
-            layer = rig.place(self.img, P[name], j0[a], j0[b], j[a], j[b], self.size)
+        for layer in (foot, shin):
             sel = layer[..., 3] > 0
             out[sel] = layer[sel]
         th = rig.place(self.img, P["thigh_soft"], j0["hip"], j0["knee"], j["hip"], j["knee"], self.size,
@@ -153,10 +162,15 @@ class LegWalker:
         for f in range(g.frames):
             t = f / g.frames
             bob = 0.5 - 0.5 * math.cos(4 * math.pi * (t - 0.05))   # 0 both feet down, 1 over the stance leg
-            hip = (hip_x, self.ground_ankle - reach + self.hip_drop * (1 - bob))
+            hip_y = self.ground_ankle - reach + self.hip_drop * (1 - bob)
+            poses = [self.foot_pose(ph, hip_x) for ph in ((t + 0.5) % 1.0, t)]
+            for (ax, ay), _ in poses:   # the pelvis drops just enough for a straight leg to reach each foot (no stretched shin)
+                lim = (self.l1 + self.l2 - 1.0) ** 2 - (ax - hip_x) ** 2
+                if lim > 0:
+                    hip_y = max(hip_y, ay - math.sqrt(lim))
+            hip = (hip_x, hip_y)
             legs, joints = [], []
-            for ph in ((t + 0.5) % 1.0, t):   # far leg first, then near
-                ankle, ang = self.foot_pose(ph, hip_x)
+            for ph, (ankle, ang) in zip(((t + 0.5) % 1.0, t), poses):   # far leg first, then near
                 follow = 0.0
                 if ph >= g.stance:
                     u = (ph - g.stance) / (1 - g.stance)
