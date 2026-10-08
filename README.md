@@ -8,7 +8,13 @@ Paint (or generate) a single leg once — pelvis, trouser leg, boot — and get 
 cloth, folds and shading never flicker between frames, because the painting itself never changes:
 only its parts move.
 
-![demo](docs/demo.gif)
+| A real character (from the game this tool was built for) | The bundled demo leg |
+|---|---|
+| ![commander](docs/commander_walk.gif) | ![demo](docs/demo.gif) |
+
+The commander's legs are a single painted leg walked by code; the torso is a separate painting that rides the pelvis.
+
+![method](docs/method.png)
 
 ## How it works
 
